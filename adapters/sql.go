@@ -29,7 +29,7 @@ func RunMigrations(db *sql.DB) {
 		panic(err)
 	}
 
-	var query = `
+	var userquery = `
     CREATE TABLE users (
         id INT AUTO_INCREMENT,
         username TEXT NOT NULL,
@@ -38,8 +38,22 @@ func RunMigrations(db *sql.DB) {
         PRIMARY KEY (id)
 	);`
 
+	var todoquery = `
+    CREATE TABLE todos (
+		id INT AUTO_INCREMENT,
+		userid INT,
+        name TEXT NOT NULL,
+        description TEXT NOT NULL,
+        exp DATETIME,
+        PRIMARY KEY (id)
+	);`
+
 	// Executes the SQL query in our database. Check err to ensure there was no error.
-	_, err := db.Exec(query)
+	if  _, err := db.Exec(userquery);err != nil {
+		fmt.Println((err))
+	}
+
+	_, err := db.Exec(todoquery)
 	if err != nil {
 		fmt.Println((err))
 	}

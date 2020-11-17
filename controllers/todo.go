@@ -7,6 +7,7 @@ import (
 	"revision/todo/models"
 	"revision/todo/response"
 	"revision/todo/services"
+	"revision/todo/utils"
 	"time"
 
 	"github.com/gorilla/mux"
@@ -15,31 +16,20 @@ import (
 // Todo defines the shape of the todo struct
 type Todo struct {
 	todoS *services.TodoService
+	utils *utils.Utils
 }
 
 // NewTodo returns the new todo object
 func NewTodo(todoService *services.TodoService) *Todo {
 	return &Todo{
 		todoS: todoService,
+		utils: utils.NewUtils(),
 	}
-}
-
-var todos = []models.Todo{
-	{
-		Name: "test todo",
-		Desc: "test todo",
-		Exp:  23,
-	},
-	{
-		Name: "test todo",
-		Desc: "test todo description",
-		Exp:  200,
-	},
 }
 
 // GetTodos is the http handler for get todos
 func (t *Todo) GetTodos(w http.ResponseWriter, r *http.Request) {
-	respondJSON(w, todos, http.StatusOK)
+	respondJSON(w, nil, http.StatusOK)
 }
 
 // GetATodo fetches a single todo
@@ -58,14 +48,28 @@ func (t *Todo) CreateAccount(w http.ResponseWriter, r *http.Request) {
 
 	body.CreatedAt = time.Now()
 	fmt.Printf("%+v", body)
-	
-	result, err := t.todoS.CreateUser(body)
+	_, err := t.todoS.CreateUser(body)
 	if err != nil {
 		respondJSON(w, err, http.StatusInternalServerError)
 		return
 	}
 
-	respondJSON(w, result, http.StatusOK)
+	respondJSON(w, body, http.StatusOK)
+}
+
+// AddTodo adds a todo to the list
+func (t *Todo) AddTodo(w http.ResponseWriter, r *http.Request) {
+	var todo *models.Todo
+	t.utils.ParseForm(r, &todo)
+
+	todo.Exp = time.Now()
+	fmt.Printf("%+v", todo)
+
+	if _, err := t.todoS.CreateTodo(todo); err != nil {
+		respondJSON(w, err, http.StatusInternalServerError)
+		return
+	}
+	respondJSON(w, todo, http.StatusOK)
 }
 
 func respondJSON(w http.ResponseWriter, data interface{}, status int) {

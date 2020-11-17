@@ -14,8 +14,10 @@ func Init(db *sql.DB) *mux.Router {
 	todoS := services.NewTodoService(db)
 	todoC := controllers.NewTodo(todoS)
 
+	r.HandleFunc("/api/users/add-new", todoC.CreateAccount).Methods("POST")
+
 	r.HandleFunc("/api/todos", todoC.GetTodos).Methods("GET")
-	r.HandleFunc("/api/todos/add-new", todoC.CreateAccount).Methods("POST")
+	r.HandleFunc("/api/todos/add-new", todoC.AddTodo).Methods("POST")
 
 	return r
 }
